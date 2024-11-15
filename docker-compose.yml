@@ -1,0 +1,57 @@
+services:
+  cloud:
+    image: cloud
+    hostname: cloud
+    container_name: cloud
+    depends_on:
+      - redis
+    environment:
+      BROKER: redis
+      PORT: 6379
+      TOPIC: traffic
+      #URL: https://api.airplanes.live/v2/point/36.1716/-115.1391/200
+      URL: https://adsbexchange.com/api/aircraft/json/lat/34/lon/-119/dist/500/
+
+
+  redis:
+    container_name: redis
+    image: redis
+    hostname: redis
+    ports:
+      - 6379:6379
+
+
+  hangar:
+    image: arangodb:latest
+    container_name: hangar
+    environment:
+      ARANGO_ROOT_PASSWORD: arango
+    ports:
+      - 8529:8529
+    volumes:
+      - ../hangar/data:/var/lib/arangodb3
+      - ../hangar/dumps:/dumps
+
+
+  runway:
+    container_name: runway
+    image: runway
+    ports:
+      - 8000:8000
+    depends_on:
+      - hangar
+
+
+  stream:
+    container_name: stream
+    image: stream
+    ports:
+      - 8080:8080
+    depends_on:
+      - redis
+    environment:
+      BROKER: redis
+      PORT: 6379
+    
+  
+
