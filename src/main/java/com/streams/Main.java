@@ -36,6 +36,7 @@ public class Main {
     public static Gson gson = new Gson();
     public static String broker = System.getenv().getOrDefault("BROKER", "redis");
     public static int port = Integer.parseInt(System.getenv().getOrDefault("PORT", "6379"));
+    public static String topic = System.getenv().getOrDefault("TOPIC", "rumble");
     
     public static void main(String[] args) {
         try{
@@ -53,8 +54,6 @@ public class Main {
     }
 
     public static void runRedisStreams() {
-        // Jedis jsub = new Jedis(broker, port);
-        // Jedis jpub = new Jedis(broker, port);
         JedisPoolConfig poolConfig = new JedisPoolConfig();
         JedisPool jedisPool = new JedisPool(poolConfig, broker, port);
 
@@ -67,7 +66,7 @@ public class Main {
                     if(message != null && message.length() > 0) {
                         String geoData = getGeoObject(message);
 
-                        jpub.publish("rumble", geoData);
+                        jpub.publish(topic, geoData);
                     }
                 }
             }, "traffic");
@@ -89,7 +88,7 @@ public class Main {
     //         String geoData = getGeoObject(message);
 
     //         return KeyValue.pair(key, geoData);
-    //     }).to("rumble");;
+    //     }).to(topic);;
 
     //     KafkaStreams streams = new KafkaStreams(builder.build(), props);
     //     streams.start();
